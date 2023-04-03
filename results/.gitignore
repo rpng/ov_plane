@@ -1,0 +1,8 @@
+exp_euroc_mav/
+!exp_euroc_mav/plot.sh
+exp_rpng_plane/
+!exp_rpng_plane/plot.sh
+exp_track_stats/
+!exp_track_stats/plot.sh
+sim_general/
+!sim_general/plot.sh
