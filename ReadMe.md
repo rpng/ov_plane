@@ -75,7 +75,7 @@ Please note the project has been updated since the time of publication and thus 
 
 ```bash
 ./src/ov_plane/results/run_ros_eth.sh        # Euroc MAV
-./src/ov_plane/results/run_ros_rpng_plane.sh # RPNG AR Table
+./src/ov_plane/results/run_ros_rpng_plane.sh # RPNG Indoor AR Table
 ./src/ov_plane/results/run_ros_tracking.sh   # Tracking statistics
 ```
 
