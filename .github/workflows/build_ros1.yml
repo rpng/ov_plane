@@ -2,7 +2,7 @@ name: ROS 1 Workflow
 
 on:
   push:
-    branches: [ ov_plane_public ]
+    branches: [ main ]
   pull_request:
 
 jobs:
