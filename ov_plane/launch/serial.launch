@@ -1,0 +1,116 @@
+<launch>
+
+    <!-- what config we are going to run (should match folder name) -->
+    <arg name="verbosity"   default="INFO" /> <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
+    <arg name="config"      default="rpng_plane" /> <!-- euroc_mav, rpng_plane -->
+    <arg name="config_path" default="$(find ov_plane)/../config/$(arg config)/estimator_config.yaml" />
+    <arg name="object"      default="$(find ov_plane)/../data/resources/teapot.obj" />
+
+    <!-- mono or stereo and what ros bag to play -->
+    <arg name="max_cameras" default="1" />
+    <arg name="use_stereo"  default="true" />
+    <arg name="bag_start"   default="0" />
+    <!-- V1_01_easy, V1_02_medium, V1_03_difficult, V2_01_easy, V2_02_medium, V2_03_difficult -->
+    <!-- table_01, table_02, table_03 -->
+    <arg name="dataset"     default="table_02" />
+    <arg name="bag"         default="/home/patrick/datasets/$(arg config)/$(arg dataset).bag" />
+    <!-- <arg name="bag"         default="/media/patrick/RPNG_DATA_6/$(arg config)/$(arg dataset).bag" /> -->
+
+    <!-- saving trajectory path and timing information -->
+    <arg name="dosave"      default="true" />
+    <arg name="dotime"      default="true" />
+    <arg name="dotrackinfo" default="true" />
+    <arg name="path_est"    default="/tmp/traj_estimate.txt" />
+    <arg name="path_time"   default="/tmp/traj_timing.txt" />
+    <arg name="path_track"  default="/tmp/traj_tracking.txt" />
+
+    <!-- if we should viz the groundtruth -->
+    <arg name="dolivetraj"  default="true" />
+    <arg name="path_gt"     default="$(find ov_data)/$(arg config)/$(arg dataset).txt" />
+
+    <!-- what plane constraints to apply -->
+    <arg name="use_plane_constraint"        default="true" />
+    <arg name="use_plane_constraint_msckf"  default="true" />
+    <arg name="use_plane_constraint_slamu"  default="true" />
+    <arg name="use_plane_constraint_slamd"  default="true" />
+
+    <!-- parameters -->
+    <arg name="use_plane_slam_feats"  default="true" />
+    <arg name="use_refine_plane_feat" default="true" />
+
+    <!-- noises -->
+    <arg name="sigma_constraint"      default="0.010" />
+    <arg name="const_init_multi"      default="1.0" />
+    <arg name="const_init_chi2"       default="1.0" />
+    <arg name="max_msckf_plane"       default="20" />
+
+    <!-- tracking stuff -->
+    <arg name="num_slam"              default="15" />
+    <arg name="num_pts"               default="200" />
+
+    <!-- MASTER NODE! -->
+<!--    <node name="ov_plane" pkg="ov_plane" type="ros1_serial_msckf" output="screen" clear_params="true" required="true" launch-prefix="gdb -ex run &#45;&#45;args">-->
+    <node name="ov_plane" pkg="ov_plane" type="ros1_serial_msckf" output="screen" clear_params="true" required="true">
+
+        <!-- bag parameters -->
+        <param name="path_bag"                 type="str"    value="$(arg bag)" />
+        <param name="bag_start"                type="double" value="$(arg bag_start)" />
+        <param name="bag_durr"                 type="int"    value="-1" />
+
+        <!-- master configuration object -->
+        <param name="verbosity"                 type="str"    value="$(arg verbosity)" />
+        <param name="config_path"               type="str"    value="$(arg config_path)" />
+
+        <!-- world/filter parameters -->
+        <param name="num_pts"                   type="int"    value="$(arg num_pts)" />
+        <param name="use_stereo"                type="bool"   value="$(arg use_stereo)" />
+        <param name="max_cameras"               type="int"    value="$(arg max_cameras)" />
+        <param name="max_slam"                  type="int"    value="$(arg num_slam)" />
+
+        <param name="use_plane_constraint"         type="bool"   value="$(arg use_plane_constraint)" />
+        <param name="use_plane_constraint_msckf"   type="bool"   value="$(arg use_plane_constraint_msckf)" />
+        <param name="use_plane_constraint_slamu"   type="bool"   value="$(arg use_plane_constraint_slamu)" />
+        <param name="use_plane_constraint_slamd"   type="bool"   value="$(arg use_plane_constraint_slamd)" />
+
+        <param name="use_plane_slam_feats"   type="bool"   value="$(arg use_plane_slam_feats)" />
+        <param name="use_refine_plane_feat"  type="bool"   value="$(arg use_refine_plane_feat)" />
+
+        <param name="sigma_constraint"       type="double" value="$(arg sigma_constraint)" />
+        <param name="const_init_multi"       type="double" value="$(arg const_init_multi)" />
+        <param name="const_init_chi2"        type="double" value="$(arg const_init_chi2)" />
+        <param name="max_msckf_plane"        type="int"    value="$(arg max_msckf_plane)" />
+
+        <!-- timing statistics recording -->
+        <param name="record_timing_information" type="bool"   value="$(arg dotime)" />
+        <param name="record_timing_filepath"    type="str"    value="$(arg path_time)" />
+
+        <!-- plane tracking statistics recording -->
+        <param name="record_plane_tracking_information" type="bool"   value="$(arg dotrackinfo)" />
+        <param name="record_plane_tracking_filepath"    type="str"    value="$(arg path_track)" />
+
+        <!-- AR display object file -->
+        <param name="path_object"              type="str"   value="$(arg object)" />
+
+    </node>
+
+    <!-- record the trajectory if enabled -->
+    <group if="$(arg dosave)">
+        <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
+            <param name="topic"      type="str" value="/ov_plane/poseimu" />
+            <param name="topic_type" type="str" value="PoseWithCovarianceStamped" />
+            <param name="output"     type="str" value="$(arg path_est)" />
+        </node>
+    </group>
+
+    <!-- path viz of aligned gt -->
+    <group if="$(arg dolivetraj)">
+        <node name="live_align_trajectory" pkg="ov_eval" type="live_align_trajectory" output="log" clear_params="true">
+            <remap from="/ov_msckf/pathimu" to="/ov_plane/pathimu"/>
+            <remap from="/ov_msckf/pathgt"  to="/ov_plane/pathgt"/>
+            <param name="alignment_type" type="str" value="posyaw" />
+            <param name="path_gt"        type="str" value="$(arg path_gt)" />
+        </node>
+    </group>
+
+
+</launch>

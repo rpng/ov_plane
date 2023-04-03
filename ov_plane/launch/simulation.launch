@@ -1,0 +1,148 @@
+<launch>
+
+    <!-- what config we are going to run (should match folder name) -->
+    <arg name="verbosity"   default="INFO" /> <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
+    <arg name="config"      default="sim" />
+    <arg name="config_path" default="$(find ov_plane)/../config/$(arg config)/estimator_config.yaml" />
+
+    <!-- simulation parameters we can vary with our scripts -->
+    <arg name="seed"          default="3" />
+    <arg name="fej"           default="true" />
+    <arg name="feat_rep"      default="GLOBAL_3D" />
+    <arg name="num_clones"    default="11" />
+    <arg name="num_slam"      default="0" />
+    <arg name="num_pts"       default="0" />
+    <arg name="num_pts_plane" default="150" />
+    <arg name="max_cameras"   default="1" />
+
+    <!-- ================================================================ -->
+    <!-- ================================================================ -->
+
+    <arg name="use_plane_constraint"        default="true" />
+    <arg name="use_plane_constraint_msckf"  default="true" />
+    <arg name="use_plane_constraint_slamu"  default="true" />
+    <arg name="use_plane_constraint_slamd"  default="true" />
+
+    <arg name="use_plane_slam_feats"  default="true" />
+    <arg name="use_refine_plane_feat" default="true" />
+    <arg name="use_groundtruths"      default="false" />
+
+    <arg name="sigma_constraint"      default="0.001" />
+    <arg name="const_init_multi"      default="1.0" />
+    <arg name="const_init_chi2"       default="999999.00" />
+    <arg name="max_msckf_plane"       default="99999" />
+
+    <arg name="freq_cam"    default="10" />
+    <arg name="freq_imu"    default="400" />
+
+    <!-- udel_arl, udel_arl_short, udel_room_05, udel_room_05_short -->
+    <arg name="dataset"    default="udel_arl_short.txt" />
+
+    <!-- if we should perturb the initial state values (i.e. calibration) -->
+    <arg name="sim_do_perturbation" default="false" />
+    <arg name="sim_do_calibration"  default="false" />
+
+    <!-- saving trajectory paths -->
+    <arg name="dosave_pose"     default="true" />
+    <arg name="path_est"        default="/tmp/traj_estimate.txt" />
+    <arg name="path_gt"         default="/tmp/traj_groundtruth.txt" />
+    <arg name="dosave_state"    default="true" />
+    <arg name="path_state_est"  default="/tmp/state_estimate.txt" />
+    <arg name="path_state_std"  default="/tmp/state_deviation.txt" />
+    <arg name="path_state_gt"   default="/tmp/state_groundtruth.txt" />
+    <arg name="dotime"          default="false" />
+    <arg name="path_time"       default="/tmp/traj_timing.txt" />
+    <arg name="dotrackinfo"     default="false" />
+    <arg name="path_track"      default="/tmp/traj_tracking.txt" />
+
+    <!-- ================================================================ -->
+    <!-- ================================================================ -->
+
+
+    <!-- MASTER NODE! -->
+    <node name="ov_plane" pkg="ov_plane" type="run_simulation" output="screen" clear_params="true" required="true">
+<!--    <node name="ov_plane" pkg="ov_plane" type="run_simulation" output="screen" clear_params="true" required="true" launch-prefix="gdb -ex run &#45;&#45;args">-->
+
+        <!-- =============================================== -->
+        <!-- SIMULATION PARAMETERS -->
+        <!-- =============================================== -->
+
+        <param name="sim_traj_path"          type="str"    value="$(find ov_plane)/../data/$(arg dataset)" />
+        <param name="sim_seed_state_init"    type="int"    value="0" />
+        <param name="sim_seed_measurements"  type="int"    value="$(arg seed)" />
+        <param name="sim_seed_preturb"       type="int"    value="$(arg seed)" />
+        <param name="sim_freq_cam"           type="int"    value="$(arg freq_cam)" />
+        <param name="sim_freq_imu"           type="int"    value="$(arg freq_imu)" />
+        <param name="sim_do_perturbation"    type="bool"   value="$(arg sim_do_perturbation)" />
+
+        <param name="save_total_state"       type="bool"   value="$(arg dosave_state)" />
+        <param name="filepath_est"           type="str"    value="$(arg path_state_est)" />
+        <param name="filepath_std"           type="str"    value="$(arg path_state_std)" />
+        <param name="filepath_gt"            type="str"    value="$(arg path_state_gt)" />
+
+        <!-- timing statistics recording -->
+        <param name="record_timing_information" type="bool"   value="$(arg dotime)" />
+        <param name="record_timing_filepath"    type="str"    value="$(arg path_time)" />
+
+        <!-- plane tracking statistics recording -->
+        <param name="record_plane_tracking_information" type="bool"   value="$(arg dotrackinfo)" />
+        <param name="record_plane_tracking_filepath"    type="str"    value="$(arg path_track)" />
+
+        <!-- =============================================== -->
+        <!-- =============================================== -->
+
+        <!-- master configuration object -->
+        <param name="verbosity"              type="str"    value="$(arg verbosity)" />
+        <param name="config_path"            type="str"    value="$(arg config_path)" />
+        <param name="num_opencv_threads"     type="int"    value="0" />
+
+        <!-- world/filter parameters -->
+        <param name="use_fej"                type="bool"   value="$(arg fej)" />
+        <param name="calib_cam_extrinsics"   type="bool"   value="$(arg sim_do_calibration)" />
+        <param name="calib_cam_intrinsics"   type="bool"   value="$(arg sim_do_calibration)" />
+        <param name="calib_cam_timeoffset"   type="bool"   value="$(arg sim_do_calibration)" />
+        <param name="max_clones"             type="int"    value="$(arg num_clones)" />
+        <param name="max_slam"               type="int"    value="$(arg num_slam)" />
+        <param name="max_cameras"            type="int"    value="$(arg max_cameras)" />
+        <param name="feat_rep_msckf"         type="str"    value="$(arg feat_rep)" />
+        <param name="feat_rep_slam"          type="str"    value="$(arg feat_rep)" />
+        <param name="feat_rep_aruco"         type="str"    value="$(arg feat_rep)" />
+
+        <!-- plane parameters -->
+        <param name="use_plane_constraint"         type="bool"   value="$(arg use_plane_constraint)" />
+        <param name="use_plane_constraint_msckf"   type="bool"   value="$(arg use_plane_constraint_msckf)" />
+        <param name="use_plane_constraint_slamu"   type="bool"   value="$(arg use_plane_constraint_slamu)" />
+        <param name="use_plane_constraint_slamd"   type="bool"   value="$(arg use_plane_constraint_slamd)" />
+
+        <param name="use_plane_slam_feats"   type="bool"   value="$(arg use_plane_slam_feats)" />
+        <param name="use_refine_plane_feat"  type="bool"   value="$(arg use_refine_plane_feat)" />
+        <param name="use_groundtruths"       type="bool"   value="$(arg use_groundtruths)" />
+
+        <param name="sigma_constraint"       type="double" value="$(arg sigma_constraint)" />
+        <param name="const_init_multi"       type="double" value="$(arg const_init_multi)" />
+        <param name="const_init_chi2"        type="double" value="$(arg const_init_chi2)" />
+        <param name="max_msckf_plane"        type="int"    value="$(arg max_msckf_plane)" />
+
+        <!-- tracker/extractor properties -->
+        <param name="num_pts"                type="int"    value="$(arg num_pts)" />
+        <param name="num_pts_plane"          type="int"    value="$(arg num_pts_plane)" />
+
+    </node>
+
+
+    <!-- record the trajectory if enabled -->
+    <group if="$(arg dosave_pose)">
+        <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen">
+            <param name="topic"      type="str" value="/ov_plane/poseimu" />
+            <param name="topic_type" type="str" value="PoseWithCovarianceStamped" />
+            <param name="output"     type="str" value="$(arg path_est)" />
+        </node>
+        <node name="recorder_groundtruth" pkg="ov_eval" type="pose_to_file" output="screen">
+            <param name="topic"      type="str" value="/ov_plane/posegt" />
+            <param name="topic_type" type="str" value="PoseStamped" />
+            <param name="output"     type="str" value="$(arg path_gt)" />
+        </node>
+    </group>
+
+
+</launch>

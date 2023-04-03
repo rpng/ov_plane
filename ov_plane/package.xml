@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<package format="3">
+
+    <!-- Package Information -->
+    <name>ov_plane</name>
+    <version>1.0.0</version>
+    <description>
+        Monocular Visual-Inertial Odometry with Planar Regularities
+    </description>
+    <url type="bugtracker">https://github.com/rpng/ov_plane/issues</url>
+    <url type="repository">https://github.com/rpng/ov_plane</url>
+
+    <!-- Code Authors -->
+    <author email="ccchu@udel.edu">Chuchu Chen</author>
+    <author email="pgeneva@udel.edu">Patrick Geneva</author>
+    <author email="yxpeng@udel.edu">Yuxiang Peng</author>
+    <author email="woosik@udel.edu">Woosik Lee</author>
+    <author email="ghuang@udel.edu">Guoquan Huang</author>
+    <maintainer email="ccchu@udel.edu">Chuchu Chen</maintainer>
+    <maintainer email="pgeneva@udel.edu">Patrick Geneva</maintainer>
+
+    <!-- Licensing -->
+    <license>GNU General Public License v3.0</license>
+
+    <!-- ROS1: Dependencies needed to compile this package. -->
+    <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+    <depend condition="$ROS_VERSION == 1">cmake_modules</depend>
+    <depend condition="$ROS_VERSION == 1">roscpp</depend>
+    <depend condition="$ROS_VERSION == 1">rosbag</depend>
+    <depend condition="$ROS_VERSION == 1">tf</depend>
+    <depend condition="$ROS_VERSION == 1">std_msgs</depend>
+    <depend condition="$ROS_VERSION == 1">sensor_msgs</depend>
+    <depend condition="$ROS_VERSION == 1">geometry_msgs</depend>
+    <depend condition="$ROS_VERSION == 1">nav_msgs</depend>
+    <depend condition="$ROS_VERSION == 1">visualization_msgs</depend>
+    <depend condition="$ROS_VERSION == 1">image_transport</depend>
+    <depend condition="$ROS_VERSION == 1">cv_bridge</depend>
+    <depend condition="$ROS_VERSION == 1">ov_core</depend>
+    <depend condition="$ROS_VERSION == 1">ov_init</depend>
+    <depend condition="$ROS_VERSION == 1">ov_eval</depend>
+
+    <!-- System dependencies for both versions -->
+    <depend>eigen</depend>
+    <depend>libopencv-dev</depend>
+    <depend>libopencv-contrib-dev</depend>
+    <depend>boost</depend>
+    <depend>libceres-dev</depend>
+
+    <!-- Note the export is required to expose the executables -->
+    <export>
+        <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    </export>
+
+</package>
