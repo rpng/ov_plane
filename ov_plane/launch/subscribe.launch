@@ -1,7 +1,7 @@
 <launch>
 
     <!-- what config we are going to run (should match folder name) -->
-    <arg name="verbosity"   default="INFO" /> <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
+    <arg name="verbosity"   default="DEBUG" /> <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
     <arg name="config"      default="rpng_plane" /> <!-- euroc_mav, rpng_plane -->
     <arg name="config_path" default="$(find ov_plane)/../config/$(arg config)/estimator_config.yaml" />
     <arg name="object"      default="$(find ov_plane)/../data/resources/teapot.obj" />
@@ -9,7 +9,9 @@
     <!-- mono or stereo and what ros bag to play -->
     <arg name="max_cameras" default="1" />
     <arg name="use_stereo"  default="true" />
-    <arg name="bag_start"   default="0" />
+    <arg name="bag_start"   default="0" /> <!-- v1-2: 0, mh1: 40, mh2: 35, mh3: 17.5, mh4-5: 15 -->
+    <arg name="bag_rate"    default="1" />
+    <arg name="dobag"       default="false" /> <!-- if we should play back the bag -->
     <!-- V1_01_easy, V1_02_medium, V1_03_difficult, V2_01_easy, V2_02_medium, V2_03_difficult -->
     <!-- table_01, table_02, table_03 -->
     <arg name="dataset"     default="table_02" />
@@ -26,7 +28,7 @@
     <arg name="path_track"  default="/tmp/traj_tracking.txt" />
 
     <!-- if we should viz the groundtruth -->
-    <arg name="dolivetraj"  default="true" />
+    <arg name="dolivetraj"  default="false" />
     <arg name="path_gt"     default="$(find ov_data)/$(arg config)/$(arg dataset).txt" />
 
     <!-- what plane constraints to apply -->
@@ -50,23 +52,18 @@
     <arg name="num_pts"               default="200" />
 
     <!-- MASTER NODE! -->
-<!--    <node name="ov_plane" pkg="ov_plane" type="ros1_serial_msckf" output="screen" clear_params="true" required="true" launch-prefix="gdb -ex run &#45;&#45;args">-->
-    <node name="ov_plane" pkg="ov_plane" type="ros1_serial_msckf" output="screen" clear_params="true" required="true">
-
-        <!-- bag parameters -->
-        <param name="path_bag"                 type="str"    value="$(arg bag)" />
-        <param name="bag_start"                type="double" value="$(arg bag_start)" />
-        <param name="bag_durr"                 type="int"    value="-1" />
+    <!--    <node name="ov_plane" pkg="ov_plane" type="run_subscribe_msckf" output="screen" clear_params="true" required="true" launch-prefix="gdb -ex run &#45;&#45;args">-->
+    <node name="ov_plane" pkg="ov_plane" type="run_subscribe_msckf" output="screen" clear_params="true" required="true">
 
         <!-- master configuration object -->
-        <param name="verbosity"                 type="str"    value="$(arg verbosity)" />
-        <param name="config_path"               type="str"    value="$(arg config_path)" />
+        <param name="verbosity"              type="string" value="$(arg verbosity)" />
+        <param name="config_path"            type="string" value="$(arg config_path)" />
 
         <!-- world/filter parameters -->
-        <param name="num_pts"                   type="int"    value="$(arg num_pts)" />
-        <param name="use_stereo"                type="bool"   value="$(arg use_stereo)" />
-        <param name="max_cameras"               type="int"    value="$(arg max_cameras)" />
-        <param name="max_slam"                  type="int"    value="$(arg num_slam)" />
+        <param name="num_pts"                type="int"    value="$(arg num_pts)" />
+        <param name="use_stereo"             type="bool"   value="$(arg use_stereo)" />
+        <param name="max_cameras"            type="int"    value="$(arg max_cameras)" />
+        <param name="max_slam"               type="int"    value="$(arg num_slam)" />
 
         <param name="use_plane_constraint"         type="bool"   value="$(arg use_plane_constraint)" />
         <param name="use_plane_constraint_msckf"   type="bool"   value="$(arg use_plane_constraint_msckf)" />
@@ -93,6 +90,11 @@
         <param name="path_object"              type="str"   value="$(arg object)" />
 
     </node>
+
+    <!-- play the dataset -->
+    <group if="$(arg dobag)">
+        <node pkg="rosbag" type="play" name="rosbag" args="-d 1 -r $(arg bag_rate) -s $(arg bag_start) $(arg bag)" required="true"/>
+    </group>
 
     <!-- record the trajectory if enabled -->
     <group if="$(arg dosave)">

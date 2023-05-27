@@ -1334,6 +1334,8 @@ void ROS1Visualizer::publish_planes() {
     }
 
     // Render the model on each plane
+    // TODO: with live data, this adds so much delay / lag into the system
+    // TODO: should move this to the publish_image function...
     if (render_ar) {
       for (auto const &planepair : _app->get_good_features_PLANE_SLAM()) {
 
