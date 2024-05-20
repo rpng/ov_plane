@@ -143,6 +143,14 @@ install(TARGETS timing_custom
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+add_executable(run_subscribe_msckf src/run_subscribe_msckf.cpp)
+target_link_libraries(run_subscribe_msckf ov_plane_lib ${thirdparty_libraries})
+install(TARGETS run_subscribe_msckf
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 ##################################################
 # Launch files!
 ##################################################
